@@ -29,11 +29,11 @@ contract OftBridge is Ownable {
     mapping(address tokenAddress => uint feeShare) public adminFeeShareBP;    // Admin's fee share per token (bps)
 
     // Mappings for managing token addresses and chain configurations
-    mapping(address tokenAddress => uint scalingFactor) internal stableTokensForGasScalingFactor; // Scaling factor for token-to-gas conversion
-    mapping(uint chainId => uint32 eid) private chainIdEidMap;                               // Map from chain ID to LayerZero Endpoint ID
-    mapping(uint chainId => uint maxExtraGas) internal maxExtraGas;                         // Maximum allowed extra gas for each chain
-    mapping(uint chainId => uint128 gasLimit) internal lzGasLimit;                          // LayerZero-specific gas limit for cross-chain transactions
-    mapping(address tokenAddress => address oftAddress) public oftAddress;                 // Map from token to its OFT contract address
+    mapping(address tokenAddress => uint scalingFactor) internal stableTokensForGasScalingFactor;               // Scaling factor for token-to-gas conversion
+    mapping(uint chainId => uint32 eid) private chainIdEidMap;                                                  // Map from chain ID to LayerZero Endpoint ID
+    mapping(uint chainId => uint maxExtraGas) internal maxExtraGas;                                             // Maximum allowed extra gas for each chain
+    mapping(uint chainId => uint128 gasLimit) internal lzGasLimit;                                              // LayerZero-specific gas limit for cross-chain transactions
+    mapping(address tokenAddress => mapping(uint destinationChainId => address oftAddress)) public oftAddress;  // Map from token to its OFT contract address depending on destination ChainId
 
     /**
      * @dev Event emitted when the contract receives some gas directly.
@@ -98,8 +98,8 @@ contract OftBridge is Ownable {
         require(recipient != 0, "Recipient must be nonzero");
         require(slippageBP <= BP, "Too high slippage");
         // Retrieve the oft address associated with the token
-        address oft = oftAddress[tokenAddress];
-        require(oft != address(0), "Token is not registered");
+        address oft = oftAddress[tokenAddress][destinationChainId];
+        require(oft != address(0), "Token is not registered for the destination");
 
         IERC20(tokenAddress).safeTransferFrom(msg.sender, address(this), amount);
 
@@ -185,26 +185,28 @@ contract OftBridge is Ownable {
     }
 
     /**
-     * @notice Adds a new token to the bridge with its corresponding OFT contract.
+     * @notice Adds a new token to the bridge with its corresponding OFT contract for specific destination
      * @param oft_ The address of the OFT contract for the token.
+     * @param destinationChainId_ The ID of the destination chain.
      */
-    function addToken(address oft_) external onlyOwner {
+    function addToken(address oft_, uint destinationChainId_) external onlyOwner {
         address tokenAddress = IOFT(oft_).token();
         uint tokenDecimals = IERC20Metadata(tokenAddress).decimals();
         IERC20(tokenAddress).forceApprove(oft_, type(uint256).max);
         stableTokensForGasScalingFactor[tokenAddress] = 10 ** (ORACLE_PRECISION - tokenDecimals + chainPrecision);
-        oftAddress[tokenAddress] = oft_;
+        oftAddress[tokenAddress][destinationChainId_] = oft_;
     }
 
     /**
-     * @notice Removes a token from the bridge.
+     * @notice Removes a token from the bridge for specific destination.
      * @param oft_ The address of the OFT contract to remove.
+     * @param destinationChainId_ The ID of the destination chain.
      */
-    function removeToken(address oft_) external onlyOwner {
+    function removeToken(address oft_, uint destinationChainId_) external onlyOwner {
         address tokenAddress = IOFT(oft_).token();
         stableTokensForGasScalingFactor[tokenAddress] = 0;
         IERC20(tokenAddress).forceApprove(oft_, 0);
-        oftAddress[tokenAddress] = address(0);
+        oftAddress[tokenAddress][destinationChainId_] = address(0);
     }
 
     /**
@@ -214,8 +216,8 @@ contract OftBridge is Ownable {
      * @return The required fee in native gas tokens.
      */
     function relayerFee(address tokenAddress_, uint destinationChainId_) external view returns (uint) {
-        address oft = oftAddress[tokenAddress_];
-        require(oft != address(0), "Token is not registered");
+        address oft = oftAddress[tokenAddress_][destinationChainId_];
+        require(oft != address(0), "Token is not registered for the destination");
         MessagingFee memory messagingFee = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, 0), false);
         return messagingFee.nativeFee;
     }
@@ -228,8 +230,8 @@ contract OftBridge is Ownable {
      * @return The price of the additional gas in native tokens.
      */
     function extraGasPrice(address tokenAddress_, uint destinationChainId_, uint128 extraGasAmount_) external view returns (uint) {
-        address oft = oftAddress[tokenAddress_];
-        require(oft != address(0), "Token is not registered");
+        address oft = oftAddress[tokenAddress_][destinationChainId_];
+        require(oft != address(0), "Token is not registered for the destination");
         MessagingFee memory messagingFee1 = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, extraGasAmount_), false);
         MessagingFee memory messagingFee2 = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, extraGasAmount_ * 2), false);
         return messagingFee2.nativeFee - messagingFee1.nativeFee;

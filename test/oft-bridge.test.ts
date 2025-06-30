@@ -19,7 +19,7 @@ describe('OftBridge', function() {
   let extraGasInDestinationToken: bigint;
   let slippageBP: number;
   const BP = 10000; // Basis points denominator (10000 = 100%)
-  const defaulrRelayerFee = BigInt(ethers.utils.parseUnits('0.01', 18).toString());
+  const defaultRelayerFee = BigInt(ethers.utils.parseUnits('0.01', 18).toString());
 
   beforeEach(async function() {
     // Get signers
@@ -68,7 +68,7 @@ describe('OftBridge', function() {
 
     // Set up the OFT bridge
     await oftBridge.registerBridgeDestination(destinationChainId, 1000, 300000); // Register destination with eid 1000
-    await oftBridge.addToken(mockOFT.address); // Register OFT token
+    await oftBridge.addToken(mockOFT.address, destinationChainId); // Register OFT token
     await oftBridge.setMaxExtraGas(
       destinationChainId,
       ethers.utils.parseUnits('0.05', 18),
@@ -98,7 +98,7 @@ describe('OftBridge', function() {
     });
 
     it('Should register token properly', async function() {
-      expect(await oftBridge.oftAddress(mockERC20.address)).to.equal(
+      expect(await oftBridge.oftAddress(mockERC20.address, destinationChainId)).to.equal(
         mockOFT.address,
       );
 
@@ -147,7 +147,7 @@ describe('OftBridge', function() {
           destinationChainId,
           relayerFeeGasAmount,
           '0',
-          defaulrRelayerFee + extraGasInDestinationToken,
+          defaultRelayerFee + extraGasInDestinationToken,
           relayerFeeTokenAmount,
           adminFee,
           extraGasInDestinationToken,
@@ -249,6 +249,22 @@ describe('OftBridge', function() {
             slippageBP,
             { value: ethers.utils.parseEther('0.01') },
           ),
+      ).to.be.revertedWith('Token is not registered for the destination');
+      await oftBridge.addToken(mockOFT.address, unknownChainId);
+
+      await expect(
+        oftBridge
+          .connect(user)
+          .bridge(
+            mockERC20.address,
+            amount,
+            recipient,
+            unknownChainId,
+            relayerFeeTokenAmount,
+            extraGasInDestinationToken,
+            slippageBP,
+            { value: ethers.utils.parseEther('0.01') },
+          ),
       ).to.be.revertedWith('Unknown chain id');
     });
   });
@@ -314,7 +330,7 @@ describe('OftBridge', function() {
           destinationChainId,
           relayerFeeGasAmount,
           ethers.utils.parseUnits('0.01', 18), // 0.02 tokens = 0.01 ETH at our price
-          defaulrRelayerFee + extraGasInDestinationToken,
+          defaultRelayerFee + extraGasInDestinationToken,
           relayerFeeTokenAmount,
           adminFee,
           extraGasInDestinationToken,
@@ -409,15 +425,15 @@ describe('OftBridge', function() {
 
     it('Should allow owner to remove a token', async function() {
       // First check the token is registered
-      expect(await oftBridge.oftAddress(mockERC20.address)).to.equal(
+      expect(await oftBridge.oftAddress(mockERC20.address, destinationChainId)).to.equal(
         mockOFT.address,
       );
 
       // Remove the token
-      await oftBridge.connect(owner).removeToken(mockOFT.address);
+      await oftBridge.connect(owner).removeToken(mockOFT.address, destinationChainId);
 
       // Check it's removed
-      expect(await oftBridge.oftAddress(mockERC20.address)).to.equal(
+      expect(await oftBridge.oftAddress(mockERC20.address, destinationChainId)).to.equal(
         ethers.constants.AddressZero,
       );
 
@@ -452,11 +468,11 @@ describe('OftBridge', function() {
       ).to.be.revertedWith('Ownable: caller is not the owner');
 
       await expect(
-        oftBridge.connect(user).addToken(mockOFT.address),
+        oftBridge.connect(user).addToken(mockOFT.address, destinationChainId),
       ).to.be.revertedWith('Ownable: caller is not the owner');
 
       await expect(
-        oftBridge.connect(user).removeToken(mockOFT.address),
+        oftBridge.connect(user).removeToken(mockOFT.address, destinationChainId),
       ).to.be.revertedWith('Ownable: caller is not the owner');
     });
   });

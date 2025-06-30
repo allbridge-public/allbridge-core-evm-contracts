@@ -12,8 +12,10 @@ async function main() {
     throw new Error('No token address');
   }
 
+  const destinationChainId = 2;
+
   const contract = await ethers.getContractAt('OftBridge', oftBridgeAddress);
-  const result = await contract.addToken(tokenAddress);
+  const result = await contract.addToken(tokenAddress, destinationChainId);
   await handleTransactionResult(result);
 }
 
