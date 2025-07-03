@@ -24,7 +24,7 @@ function loadSolSource(contractName) {
 }
 
 function containsSafeERC20(source) {
-  return /SafeERC20|safeTransfer/gi.test(source);
+  return /SafeERC20|safeTransfer|forceApprove/gi.test(source);
 }
 
 module.exports = {

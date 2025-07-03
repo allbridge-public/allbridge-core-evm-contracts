@@ -98,6 +98,20 @@ module.exports = {
     const txId = await contract[method](...args).send();
     return await confirmTransaction(tronWeb, txId);
   },
+  callContractWithParams: async (contractName, contractAddress, method, sendParams, ...args) => {
+    const { abi } = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, `../../build/contracts/${contractName}.json`),
+        { encoding: 'utf8' },
+      ),
+    );
+    const node = process.env.NODE_URL;
+    const privateKey = process.env.PRIVATE_KEY;
+    const tronWeb = new TronWeb(node, node, node, privateKey);
+    const contract = await tronWeb.contract(abi, contractAddress);
+    const txId = await contract[method](...args).send(sendParams);
+    return await confirmTransaction(tronWeb, txId);
+  },
   getContract: async (contractName, contractAddress, method, ...args) => {
     const { abi } = JSON.parse(
       fs.readFileSync(
