@@ -5,7 +5,7 @@
   "scripts": {
     "build": "hardhat compile",
     "export-abi": "hardhat export-abi",
-    "test": "hardhat test ./test/oft-bridge.test.ts",
+    "test": "hardhat test",
     "test-with-gas-usage": "NODE_GAS=true hardhat test",
     "test-fuzzy": "hardhat test test-fuzzy/pool.test.ts test-fuzzy/pool-balance.test.ts",
     "test-foundry": "forge test",

@@ -7,7 +7,7 @@ import {SendParam, MessagingFee, MessagingReceipt, OFTReceipt} from "@layerzerol
 contract MockOFT {
     using ExecutorOptions for bytes;
     address public token;
-    uint public defaultNativeFee = 0.01 ether;
+    uint public defaultNativeFee = 10000000000000000;
 
     constructor(address _token) {
         token = _token;

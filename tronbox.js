@@ -19,6 +19,7 @@ module.exports = {
       privateKey: process.env.PRIVATE_KEY,
       userFeePercentage: 50,
       feeLimit: 1000 * 1e6,
+      gas: 500000,
       fullHost: process.env.NODE_URL,
       network_id: '2',
       reset: true,
@@ -41,16 +42,17 @@ module.exports = {
     },
     compilers: {
       solc: {
-        version: '0.8.18',
+        version: '0.8.20',
       },
     },
   },
   // solc compiler optimize
   solc: {
-    //   optimizer: {
-    //     enabled: true,
-    //     runs: 200
-    //   },
+    viaIR: true,
+    optimizer: {
+      enabled: true,
+      runs: 200,
+    },
     //   evmVersion: 'istanbul'
   },
 };

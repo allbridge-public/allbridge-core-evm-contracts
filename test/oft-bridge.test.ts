@@ -454,6 +454,22 @@ describe('OftBridge', function() {
       ).to.be.revertedWith('Token is not registered');
     });
 
+    it('Should allow owner to remove a token allowance and scaling factor', async function() {
+      expect(await mockERC20.allowance(
+        oftBridge.address,
+        mockOFT.address,
+      )).to.equal(ethers.constants.MaxUint256);
+
+      // Remove the token
+      await oftBridge.connect(owner).removeTokenAllowanceAndScalingFactor(mockOFT.address);
+
+      // Check it's removed
+      expect(await mockERC20.allowance(
+        oftBridge.address,
+        mockOFT.address,
+      )).to.equal(ethers.constants.Zero);
+    });
+
     it('Should allow only owner to call admin functions', async function() {
       await expect(
         oftBridge.connect(user).setAdminFeeShare(mockERC20.address, 1000),
@@ -473,6 +489,10 @@ describe('OftBridge', function() {
 
       await expect(
         oftBridge.connect(user).removeToken(mockOFT.address, destinationChainId),
+      ).to.be.revertedWith('Ownable: caller is not the owner');
+
+      await expect(
+        oftBridge.connect(user).removeTokenAllowanceAndScalingFactor(mockOFT.address),
       ).to.be.revertedWith('Ownable: caller is not the owner');
     });
   });

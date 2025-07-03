@@ -15,9 +15,9 @@ const {
     'Bridge',
     bridgeAddress,
     'registerBridge',
-    5,
-    // ethAddressToBytes32('0xFD92c29cdF2C76206B067626A61f54589b849AB9'),
-    solanaAddressToBytes32('ERrse1kNoZPcY2BjRXQ5rHTCPDPwL1m2NQ2sGSj6cW7C'), // authority address
+    2,
+    ethAddressToBytes32('0xAA8d065E35929942f10fa8Cb58A9AF24eE03655D'),
+    // solanaAddressToBytes32('ERrse1kNoZPcY2BjRXQ5rHTCPDPwL1m2NQ2sGSj6cW7C'), // authority address
   );
   console.log(result);
 })();

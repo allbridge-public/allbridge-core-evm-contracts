@@ -204,9 +204,17 @@ contract OftBridge is Ownable {
      */
     function removeToken(address oft_, uint destinationChainId_) external onlyOwner {
         address tokenAddress = IOFT(oft_).token();
+        oftAddress[tokenAddress][destinationChainId_] = address(0);
+    }
+
+    /**
+     * @notice Removes a token allowance from oft contract and scaling factor
+     * @param oft_ The address of the OFT contract to remove.
+     */
+    function removeTokenAllowanceAndScalingFactor(address oft_) external onlyOwner {
+        address tokenAddress = IOFT(oft_).token();
         stableTokensForGasScalingFactor[tokenAddress] = 0;
         IERC20(tokenAddress).forceApprove(oft_, 0);
-        oftAddress[tokenAddress][destinationChainId_] = address(0);
     }
 
     /**
