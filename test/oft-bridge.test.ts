@@ -274,20 +274,22 @@ describe('OftBridge', function() {
       const fee = await oftBridge.relayerFee(
         mockERC20.address,
         destinationChainId,
+        amount,
       );
       expect(fee).to.equal(ethers.utils.parseEther('0.01')); // Default fee we set
     });
 
     it('Should calculate extra gas price correctly', async function() {
-      const amount = ethers.utils.parseUnits('0.002', 18);
+      const extraGasAmount = ethers.utils.parseUnits('0.002', 18);
       const extraGasCost = await oftBridge.extraGasPrice(
         mockERC20.address,
         destinationChainId,
-        amount,
+        1,
+        extraGasAmount,
       );
 
       // Should be equal to amount in tests
-      expect(extraGasCost).to.equal(amount);
+      expect(extraGasCost).to.equal(extraGasAmount);
     });
 
     it('Should return correct token-to-gas conversion', async function() {

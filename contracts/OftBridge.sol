@@ -7,7 +7,7 @@ import {IGasOracle} from "./interfaces/IGasOracle.sol";
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {SendParam, IOFT, MessagingFee} from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
+import {SendParam, IOFT, MessagingFee, OFTReceipt} from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 
 /**
  * @title OftBridge
@@ -221,27 +221,55 @@ contract OftBridge is Ownable {
      * @notice Retrieves the relayer fee required for a specific chain.
      * @param tokenAddress_ The address of the token.
      * @param destinationChainId_ The ID of the destination chain.
+     * @param amount_ The amount of tokens to bridge.
      * @return The required fee in native gas tokens.
      */
-    function relayerFee(address tokenAddress_, uint destinationChainId_) external view returns (uint) {
+    function relayerFee(address tokenAddress_, uint destinationChainId_, uint amount_) external view returns (uint) {
         address oft = oftAddress[tokenAddress_][destinationChainId_];
         require(oft != address(0), "Token is not registered for the destination");
-        MessagingFee memory messagingFee = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, 0), false);
+        MessagingFee memory messagingFee = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, amount_, 0), false);
         return messagingFee.nativeFee;
+    }
+
+    /**
+     * @notice Return amount of tokens to be received
+     * @param tokenAddress_ The address of the token.
+     * @param destinationChainId_ The ID of the destination chain.
+     * @param amount_ The amount of tokens to bridge.
+     * @return The amount of tokens to be received in local decimals
+     */
+    function receiveAmount(address tokenAddress_, uint destinationChainId_, uint amount_) external view returns (uint) {
+        address oft = oftAddress[tokenAddress_][destinationChainId_];
+        require(oft != address(0), "Token is not registered for the destination");
+        uint adminFee;
+        if (adminFeeShareBP[tokenAddress_] != 0) {
+            adminFee = (amount_ * adminFeeShareBP[tokenAddress_]) / BP;
+            if (adminFee == 0) {
+                adminFee = 1;
+            }
+            amount_ -= adminFee;
+        }
+        (, , OFTReceipt memory oftReceipt) = IOFT(oft).quoteOFT(_createEmptySendParam(destinationChainId_, amount_, 0));
+        if (oftReceipt.amountReceivedLD > 0) {
+            return oftReceipt.amountReceivedLD;
+        } else {
+            return amount_;
+        }
     }
 
     /**
      * @notice Calculates the price of additional gas on the destination chain.
      * @param tokenAddress_ The address of the token.
      * @param destinationChainId_ The ID of the destination chain.
+     * @param amount_ The amount of tokens to bridge.
      * @param extraGasAmount_ The extra gas amount for the destination chain.
      * @return The price of the additional gas in native tokens.
      */
-    function extraGasPrice(address tokenAddress_, uint destinationChainId_, uint128 extraGasAmount_) external view returns (uint) {
+    function extraGasPrice(address tokenAddress_, uint destinationChainId_, uint amount_, uint128 extraGasAmount_) external view returns (uint) {
         address oft = oftAddress[tokenAddress_][destinationChainId_];
         require(oft != address(0), "Token is not registered for the destination");
-        MessagingFee memory messagingFee1 = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, extraGasAmount_), false);
-        MessagingFee memory messagingFee2 = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, extraGasAmount_ * 2), false);
+        MessagingFee memory messagingFee1 = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, amount_, extraGasAmount_), false);
+        MessagingFee memory messagingFee2 = IOFT(oft).quoteSend(_createEmptySendParam(destinationChainId_, amount_, extraGasAmount_ * 2), false);
         return messagingFee2.nativeFee - messagingFee1.nativeFee;
     }
 
@@ -318,7 +346,7 @@ contract OftBridge is Ownable {
      * @return SendParam A LayerZero SendParam structure with basic configuration.
      */
     function _createEmptySendParam(
-        uint destinationChainId_, uint128 extraGasDestinationToken_
+        uint destinationChainId_, uint amount_, uint128 extraGasDestinationToken_
     ) private view returns (SendParam memory) {
         bytes memory options = OptionsBuilder.newOptions();
         if (lzGasLimit[destinationChainId_] > 0) {
@@ -330,7 +358,7 @@ contract OftBridge is Ownable {
         return SendParam(
             getEidByChainId(destinationChainId_),
             bytes32(0),
-            0,
+            amount_,
             0,
             options,
             "",

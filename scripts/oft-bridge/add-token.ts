@@ -7,15 +7,15 @@ async function main() {
     throw new Error('No oft bridge address');
   }
 
-  const tokenAddress = process.env.OFT_TOKEN;
-  if (!tokenAddress) {
+  const oftAddress = process.env.OFT_TOKEN;
+  if (!oftAddress) {
     throw new Error('No token address');
   }
 
-  const destinationChainId = 2;
+  const destinationChainId = 6;
 
   const contract = await ethers.getContractAt('OftBridge', oftBridgeAddress);
-  const result = await contract.addToken(tokenAddress, destinationChainId);
+  const result = await contract.addToken(oftAddress, destinationChainId);
   await handleTransactionResult(result);
 }
 
