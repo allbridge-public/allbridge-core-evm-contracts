@@ -8,10 +8,10 @@ add-bridges:
 	npx hardhat run ./scripts/bridge/add-bridge.ts --network arbitrumSepolia
 
 
-#NETWORK=sepolia
+NETWORK=sepolia
 #NETWORK=ava
 #NETWORK=alfajores
-NETWORK=shasta
+#NETWORK=shasta
 #NETWORK=nile
 
 add-bridge-tron:
@@ -71,6 +71,9 @@ oft-bridge:
 
 oft-get-fee:
 	npx hardhat run ./scripts/oft-bridge/estimate-fee.ts --network $(NETWORK)
+
+oft-get-receive-amount:
+	npx hardhat run ./scripts/oft-bridge/get-receive-amount.ts --network $(NETWORK)
 
 oft-set-lz-gas-limit:
 	npx hardhat run ./scripts/oft-bridge/set-lz-gas-limit.ts --network $(NETWORK)

@@ -12,10 +12,10 @@ async function main() {
   }
 
   const contract = await ethers.getContractAt('OftBridge', oftBridgeAddress);
-  const result = await contract.relayerFee(
+  const result = await contract.receiveAmount(
     tokenAddress,
     6,
-    1);
+    10000);
   console.log(result.toString());
 }
 

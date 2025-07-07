@@ -24,11 +24,12 @@ async function main() {
     tokenAddress,
     '1000000000000000000',
     '0x000000000000000000000000be959eed208225aab424505569d41bf3212142c0',
-    2,
+    // '0x000000000000000000000000d5677adbe65ca6ae2235dbdfb75c4bef4ae84fc3', //tron address
+    3,
     0,
-    0,
-    0,
-    { value: '0x6b9e6df7d5630', gasLimit: '500000' },
+    100000,
+    100,
+    { value: '0x16345785d8a0000', gasLimit: '500000' },
   );
   await handleTransactionResult(result);
 }
