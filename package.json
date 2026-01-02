@@ -60,7 +60,7 @@
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-prettier": "^4.2.5",
     "eslint-plugin-promise": "^6.1.1",
     "eth-lib": "^0.1.29",
     "ethereum-waffle": "^3.4.4",
