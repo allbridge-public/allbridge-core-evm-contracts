@@ -7,7 +7,7 @@ jobs:
     name: ⬣ Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/prepare
       - name: ⬣ ESLint
         run: pnpm run lint:check
@@ -16,7 +16,7 @@ jobs:
   #   name: 🛡️ Audit
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v6
   #     - uses: ./.github/actions/prepare
   #     - name: 🛡️ Audit
   #       run: pnpm audit --audit-level=high -P
@@ -25,7 +25,7 @@ jobs:
     name: 🔬 Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/prepare
       - name: 🔬 Format
         run: pnpm run format:check
@@ -34,7 +34,7 @@ jobs:
     name: 🈸 Spellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/prepare
       - name: 🈸 Spellcheck
         run: pnpm run spell:check
@@ -43,7 +43,7 @@ jobs:
     name: ⚡ Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/prepare
       - name: ⚡ Tests
         run: pnpm run test
