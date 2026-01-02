@@ -77,7 +77,7 @@
     "solidity-bytes-utils": "^0.8.3",
     "solidity-coverage": "^0.8.2",
     "table": "^6.8.1",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typechain": "^5.2.0",
     "typescript": "^5.0.4"
   },
