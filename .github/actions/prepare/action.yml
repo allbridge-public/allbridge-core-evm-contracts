@@ -10,7 +10,7 @@ runs:
         cache: pnpm
         node-version: "18"
     - name: Configure git to use HTTPS instead of SSH
-      run: git config --global url."https://github.com/".insteadOf git@github.com:
+      run: 'git config --global url."https://github.com/".insteadOf "git@github.com:"'
       shell: bash
     - run: pnpm install --frozen-lockfile
       shell: bash
