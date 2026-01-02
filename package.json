@@ -79,7 +79,7 @@
     "table": "^6.8.1",
     "ts-node": "^10.9.1",
     "typechain": "^5.2.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=12"
